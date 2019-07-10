@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <PackageId>NeuralNetwork.Learning</PackageId>
+    <Version>$(Version)</Version>
+    <PackageVersion>$(PackageVersion)</PackageVersion>
+    <Authors>Alexander Yermakov</Authors>
+    <PackageTags>neural network, neurons, backpropagation, network learning</PackageTags>
+    <PackageLicenseUrl>https://github.com/A1essandro/NeuralNetwork.Learning/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/A1essandro/NeuralNetwork.Learning</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/A1essandro/NeuralNetwork.Learning.git</RepositoryUrl>
+    <RootNamespace>NeuralNetwork.Learning</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NeuralNetwork.Structure" Version="0.1.2" />
+  </ItemGroup>
+
+</Project>
