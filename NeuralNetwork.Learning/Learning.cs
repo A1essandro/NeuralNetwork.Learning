@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace NeuralNetwork.Learning
 {
     public class Learning<TNetwork, TSample> : ILearning<TSample>
-        where TNetwork : INetwork
+        where TNetwork : ISimpleNetwork
         where TSample : ISample
     {
 

@@ -1,4 +1,4 @@
-version: 0.1.{build}
+version: 0.2.{build}-alpha
 image: Visual Studio 2017
 dotnet_csproj:
   patch: true
@@ -20,4 +20,4 @@ deploy:
     secure: WMyqg8N2dXtblpP7+rRZmP1i1GnqMrHNEFnGEVqHsCG7O6HWc8fEkKd22Fh5MDx2
   artifact: /.*\.nupkg/
   on:
-    branch: master
+    branch: 0.2

@@ -8,6 +8,7 @@ using NeuralNetwork.Structure.Nodes;
 using NeuralNetwork.Structure.Synapses;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,11 +29,30 @@ namespace Tests
             var innerLayer = new Layer(() => new Neuron(new Logistic(0.888)), 3, new Bias());
             var outputLayer = new Layer(new Neuron(new Logistic(0.777)));
 
-            var generator = new EachToEachSynapseGenerator(new Random());
-            generator.Generate(inputLayer, innerLayer);
-            generator.Generate(innerLayer, outputLayer);
+            var network = new Network
+            {
+                InputLayer = inputLayer,
+                OutputLayer = outputLayer
+            };
+            network.AddInnerLayer(innerLayer);
 
-            var network = new Network(inputLayer, innerLayer, outputLayer);
+            foreach (var layer in network.Layers)
+            {
+                foreach(var node in layer.Nodes)
+                {
+                    node.OnResultCalculated += (n, v) =>
+                    {
+                        Debug.WriteLine($"{n}: {v}");
+
+                        return Task.CompletedTask;
+                    };
+                }
+            }
+
+            var generator = new EachToEachSynapseGenerator(new Random());
+            generator.Generate(network, inputLayer, innerLayer);
+            generator.Generate(network, innerLayer, outputLayer);
+
             var samples = new List<ILearningSample>
             {
                 new LearningSample(new double[] { 0, 1 }, new double[] { 1 }),
@@ -41,8 +61,9 @@ namespace Tests
                 new LearningSample(new double[] { 1, 1 }, new double[] { 0 })
             };
 
-            network.Input(new double[] { 1, 0 });
-            var beforeLearning = (await network.Output()).First();
+            await network.Input(new double[] { 1, 0 });
+
+            var beforeLearning = network.LastCalculatedValue.First();
 
             var strategy = new BackpropagationStrategy();
             var settings = new LearningSettings
@@ -55,29 +76,25 @@ namespace Tests
             var learning = new Learning<Network, ILearningSample>(network, strategy, settings);
             await learning.Learn(samples);
 
-            network.Input(new double[] { 1, 0 });
+            await network.Input(new double[] { 1, 0 });
             var afterLearning = (await network.Output()).First();
 
             Assert.True(beforeLearning < afterLearning);
 
-            network.Input(new double[] { 1, 0 });
+            await network.Input(new double[] { 1, 0 });
             var output = (await network.Output()).First();
-            network.Refresh();
             Assert.True(Math.Abs(1 - output) < DELTA);
 
-            network.Input(new double[] { 1, 1 });
+            await network.Input(new double[] { 1, 1 });
             output = (await network.Output()).First();
-            network.Refresh();
             Assert.True(Math.Abs(0 - output) < DELTA);
 
-            network.Input(new double[] { 0, 0 });
+            await network.Input(new double[] { 0, 0 });
             output = (await network.Output()).First();
-            network.Refresh();
             Assert.True(Math.Abs(0 - output) < DELTA);
 
-            network.Input(new double[] { 0, 1 });
+            await network.Input(new double[] { 0, 1 });
             output = (await network.Output()).First();
-            network.Refresh();
             Assert.True(Math.Abs(1 - output) < DELTA);
         }
 
@@ -88,11 +105,18 @@ namespace Tests
             var innerLayer = new Layer(() => new Neuron(new Logistic(0.888)), 3, new Bias());
             var outputLayer = new Layer(new Neuron(new Logistic(0.777)));
 
-            var generator = new EachToEachSynapseGenerator(new Random());
-            generator.Generate(inputLayer, innerLayer);
-            generator.Generate(innerLayer, outputLayer);
+            var network = new Network
+            {
+                InputLayer = inputLayer,
+                OutputLayer = outputLayer
+            };
+            network.AddInnerLayer(innerLayer);
 
-            var network = new Network(inputLayer, innerLayer, outputLayer);
+            var generator = new EachToEachSynapseGenerator(new Random());
+            generator.Generate(network, inputLayer, innerLayer);
+            generator.Generate(network, innerLayer, outputLayer);
+
+            
             var samples = new List<ILearningSample>
             {
                 new LearningSample(new double[] { 0, 1 }, new double[] { 1 }),
@@ -122,11 +146,16 @@ namespace Tests
             var innerLayer = new Layer(new Neuron(new Rectifier()));
             var outputLayer = new Layer(new Neuron(new Rectifier()));
 
-            var generator = new EachToEachSynapseGenerator(new Random());
-            generator.Generate(inputLayer, innerLayer);
-            generator.Generate(innerLayer, outputLayer);
+            var network = new Network
+            {
+                InputLayer = inputLayer,
+                OutputLayer = outputLayer
+            };
+            network.AddInnerLayer(innerLayer);
 
-            var network = new Network(inputLayer, innerLayer, outputLayer);
+            var generator = new EachToEachSynapseGenerator(new Random());
+            generator.Generate(network, inputLayer, innerLayer);
+            generator.Generate(network, innerLayer, outputLayer);
 
             var samples = new List<ILearningSample>
             {
@@ -144,7 +173,7 @@ namespace Tests
 
             await learning.Learn(samples);
 
-            network.Input(new double[] { 1 });
+            await network.Input(new double[] { 1 });
             var output = (await network.Output()).First();
             Assert.True(Math.Abs(output) < DELTA);
         }
@@ -158,18 +187,16 @@ namespace Tests
 
             public EachToEachSynapseGenerator(Random random) => _random = random;
 
-            public void Generate(IReadOnlyLayer<INode> masterLayer, IReadOnlyLayer<INotInputNode> slaveLayer)
+            public void Generate(ISimpleNetwork network, IReadOnlyLayer<INode> masterLayer, IReadOnlyLayer<INotInputNode> slaveLayer)
             {
                 foreach (var mNode in masterLayer.Nodes)
                 {
                     foreach (var sNode in slaveLayer.Nodes.OfType<ISlaveNode>())
                     {
                         var weight = _getRandomWeight();
-                        var synapse = new Synapse();
-                        synapse.Weight = weight;
-                        synapse.MasterNode = mNode;
+                        var synapse = new Synapse(mNode, sNode, weight);
 
-                        sNode.AddSynapse(synapse);
+                        network.AddSynapse(synapse);
                     }
                 }
             }

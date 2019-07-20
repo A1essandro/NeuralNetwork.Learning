@@ -5,7 +5,7 @@ using NeuralNetwork.Learning.Samples;
 namespace NeuralNetwork.Learning.Strategies
 {
     public interface ILearningStrategy<in TNetwork, in TSample>
-        where TNetwork : INetwork
+        where TNetwork : ISimpleNetwork
         where TSample : ISample
     {
 
