@@ -15,7 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NeuralNetwork.Structure" Version="0.2.22-alpha" />
+    <PackageReference Include="NeuralNetwork.Structure" Version="0.2.29-alpha" />
   </ItemGroup>
 
 </Project>
