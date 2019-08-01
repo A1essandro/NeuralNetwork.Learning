@@ -1,4 +1,4 @@
-﻿using NeuralNetwork.Structure.Nodes;
+﻿using NeuralNetwork.Structure.Contract.Nodes;
 using System.Diagnostics;
 
 namespace NeuralNetwork.Learning.Strategies

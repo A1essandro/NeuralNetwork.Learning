@@ -15,7 +15,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NeuralNetwork.Structure" Version="0.2.29-alpha" />
+    <PackageReference Include="System.Threading.Tasks.Parallel" Version="4.3.0" />
+    <PackageReference Include="NeuralNetwork.Structure.Contract" Version="1.0.1" />
   </ItemGroup>
 
 </Project>

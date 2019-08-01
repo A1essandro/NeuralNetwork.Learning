@@ -2,6 +2,9 @@
 using NeuralNetwork.Learning.Samples;
 using NeuralNetwork.Learning.Strategies;
 using NeuralNetwork.Structure.ActivationFunctions;
+using NeuralNetwork.Structure.Contract.Layers;
+using NeuralNetwork.Structure.Contract.Networks;
+using NeuralNetwork.Structure.Contract.Nodes;
 using NeuralNetwork.Structure.Layers;
 using NeuralNetwork.Structure.Networks;
 using NeuralNetwork.Structure.Nodes;
