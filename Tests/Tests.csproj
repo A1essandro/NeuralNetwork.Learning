@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NeuralNetwork.Structure" Version="1.0.32-alpha" />
+    <PackageReference Include="NeuralNetwork.Structure" Version="1.0.34" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
       <PrivateAssets>all</PrivateAssets>

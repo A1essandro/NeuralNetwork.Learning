@@ -6,7 +6,7 @@
     <Version>$(Version)</Version>
     <PackageVersion>$(PackageVersion)</PackageVersion>
     <Authors>Alexander Yermakov</Authors>
-    <PackageTags>neural network, neurons, backpropagation, network learning</PackageTags>
+    <PackageTags>neural network; neurons; backpropagation; network learning</PackageTags>
     <PackageLicenseUrl>https://github.com/A1essandro/NeuralNetwork.Learning/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/A1essandro/NeuralNetwork.Learning</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
@@ -15,8 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Threading.Tasks.Parallel" Version="4.3.0" />
-    <PackageReference Include="NeuralNetwork.Structure.Contract" Version="1.0.1" />
+    <PackageReference Include="NeuralNetwork.Structure.Contract" Version="1.0.4" />
   </ItemGroup>
 
 </Project>

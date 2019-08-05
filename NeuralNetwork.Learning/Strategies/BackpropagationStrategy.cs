@@ -3,30 +3,22 @@ using NeuralNetwork.Structure.Contract.Networks;
 using NeuralNetwork.Structure.Contract.Nodes;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace NeuralNetwork.Learning.Strategies
 {
-    public partial class BackpropagationStrategy : ILearningStrategy<ISimpleNetwork, ILearningSample>
+
+    public class BackpropagationStrategy : ILearningStrategy<ISimpleNetwork, ILearningSample>
     {
 
-        public Task LearnSample(ISimpleNetwork network, ILearningSample sample, double theta)
+        public async Task LearnSample(ISimpleNetwork network, ILearningSample sample, double theta)
         {
-            return _teach(network, sample.Input, sample.Output, theta);
-        }
-
-        #region Private
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private async Task _teach(ISimpleNetwork network, IEnumerable<double> input, IEnumerable<double> expectation, double force)
-        {
-            await network.Input(input);
+            await network.Input(sample.Input);
             var output = (await network.Output().ConfigureAwait(false)).ToArray();
-            var sigmas = new List<NeuronSigma>();
-            var expectationArr = expectation.ToArray();
+            var sigmas = new List<NeuronSigma>(GetSigmasCount(network));
+            var expectationArr = sample.Output.ToArray();
 
-            CalculateSigmasForOutputLayer(network, sigmas, force, output, expectationArr);
+            CalculateSigmasForOutputLayer(network, sigmas, theta, output, expectationArr);
 
             foreach (var layer in network.Layers.Where(l => l != network.OutputLayer && l != network.InputLayer).Reverse())
             {
@@ -35,13 +27,19 @@ namespace NeuralNetwork.Learning.Strategies
                     var sigma = SigmaCalcForInnerLayers(network, sigmas, node);
 
                     sigmas.Add(new NeuronSigma(node, sigma));
-                    ChangeWeights(network, node, sigma, force);
+                    ChangeWeights(network, node, sigma, theta);
                 }
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void CalculateSigmasForOutputLayer(ISimpleNetwork network, List<NeuronSigma> sigmas, double force, double[] output, double[] expectationArr)
+        #region Private
+
+        private static int GetSigmasCount(ISimpleNetwork network)
+        {
+            return network.Layers.SelectMany(x => x.Nodes).OfType<ISlaveNode>().Count();
+        }
+
+        private static void CalculateSigmasForOutputLayer(ISimpleNetwork network, IList<NeuronSigma> sigmas, double force, double[] output, double[] expectationArr)
         {
             var oIndex = 0;
             foreach (var node in network.OutputLayer.Nodes.OfType<ISlaveNode>())
@@ -54,40 +52,35 @@ namespace NeuralNetwork.Learning.Strategies
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double SigmaCalcForInnerLayers(ISimpleNetwork network, IEnumerable<NeuronSigma> sigmas, ISlaveNode neuron)
         {
             var derivative = GetDerivative(neuron);
             return derivative * GetChildSigmas(network, sigmas, neuron);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double SigmaCalcForOutputLayer(IReadOnlyList<double> expectation, ISlaveNode neuron, IReadOnlyList<double> output, int oIndex)
         {
             var derivative = GetDerivative(neuron);
             return derivative * (expectation[oIndex] - output[oIndex]);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double GetDerivative(ISlaveNode neuron)
         {
             var x = neuron.Summator.LastCalculatedValue;
             return neuron.Function.GetDerivative(x);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void ChangeWeights(ISimpleNetwork network, ISlaveNode neuron, double sigma, double force)
         {
             var synapses = network.Synapses.Where(x => x.SlaveNode == neuron);
 
-            Parallel.ForEach(synapses, synapse =>
+            foreach (var synapse in synapses)
             {
                 var masterNodeOutput = synapse.MasterNode.LastCalculatedValue;
                 synapse.ChangeWeight(force * sigma * masterNodeOutput);
-            });
+            }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double GetChildSigmas(ISimpleNetwork network, IEnumerable<NeuronSigma> sigmas, INode neuron)
         {
             double sigma = 0;
